@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useTeacher } from '../TeacherContext'
 
 const navLinks = [
   { path: '/', label: '首页' },
@@ -8,6 +9,7 @@ const navLinks = [
 
 export default function Layout() {
   const location = useLocation()
+  const { teacher } = useTeacher()
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
@@ -16,7 +18,7 @@ export default function Layout() {
           <Link to="/" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)' }}>
             优学家教
           </Link>
-          <nav style={{ display: 'flex', gap: 24 }}>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path
               return (
@@ -33,6 +35,15 @@ export default function Layout() {
                 </Link>
               )
             })}
+            {teacher ? (
+              <Link to="/teacher/profile" style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
+                {teacher.name}
+              </Link>
+            ) : (
+              <Link to="/teacher/login" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                我是老师
+              </Link>
+            )}
           </nav>
         </div>
       </header>

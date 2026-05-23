@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { allTeachers, allSubjects, allGrades, allDistricts, type Teacher } from '../data/teachers'
+import { allTeachers as staticTeachers, type Teacher } from '../data/teachers'
+import { useTeacher } from '../TeacherContext'
 import VideoModal from '../components/VideoModal'
 
 function createTeacherIcon(num: number, isHighlight: boolean) {
@@ -25,16 +26,34 @@ function createTeacherIcon(num: number, isHighlight: boolean) {
 
 export default function Teachers() {
   const [searchParams] = useSearchParams()
+  const { loadTeachers } = useTeacher()
   const [subject, setSubject] = useState(searchParams.get('subject') || '')
   const [grade, setGrade] = useState(searchParams.get('grade') || '')
   const [district, setDistrict] = useState('')
   const [sortBy, setSortBy] = useState('rating')
-  const [highlightId, setHighlightId] = useState<number | null>(null)
+  const [highlightId, setHighlightId] = useState<number | string | null>(null)
   const [videoTeacher, setVideoTeacher] = useState<Teacher | null>(null)
+  const [dbTeachers, setDbTeachers] = useState<Teacher[]>([])
 
   const mapRef = useRef<L.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
-  const markersRef = useRef<Map<number, L.Marker>>(new Map())
+  const markersRef = useRef<Map<number | string, L.Marker>>(new Map())
+
+  useEffect(() => {
+    loadTeachers().then((data) => {
+      if (data.length > 0) {
+        setDbTeachers(data)
+      } else {
+        setDbTeachers(staticTeachers as Teacher[])
+      }
+    })
+  }, [])
+
+  const allTeachers = useMemo(() => dbTeachers, [dbTeachers])
+
+  const allSubjects = useMemo(() => [...new Set(allTeachers.flatMap((t) => t.subjects))], [allTeachers])
+  const allGrades = useMemo(() => [...new Set(allTeachers.flatMap((t) => t.grades))], [allTeachers])
+  const allDistricts = useMemo(() => [...new Set(allTeachers.map((t) => t.district))], [allTeachers])
 
   const filtered = useMemo(() => {
     let result = [...allTeachers]

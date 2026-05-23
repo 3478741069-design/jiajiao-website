@@ -1,5 +1,5 @@
 export interface Teacher {
-  id: number
+  id: number | string
   name: string
   initial: string
   gender: string
@@ -27,7 +27,7 @@ export const allTeachers: Teacher[] = [
     subjects: ['数学', '物理'], grades: ['初中', '高中'],
     experience: '2年家教经验', rating: 4.9, students: 23, price: 80,
     university: '中南大学', major: '数学与应用数学',
-    description: '高考数学142分，讲题耐心细致，善于用通俗的方式讲清楚难题。带过三个初三学生全部考入四大名校。',
+    description: '高考数学142分,讲题耐心细致,善于用通俗的方式讲清楚难题。带过三个初三学生全部考入四大名校。',
     videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
     tags: ['高考数学142', '耐心细致', '带过初三冲刺'],
     district: '岳麓区', lat: 28.21, lng: 112.92,
@@ -47,7 +47,7 @@ export const allTeachers: Teacher[] = [
     subjects: ['语文', '历史'], grades: ['初中', '高中'],
     experience: '3年家教经验', rating: 4.9, students: 31, price: 90,
     university: '湖南大学', major: '汉语言文学',
-    description: '湖南省高考语文135分，作文接近满分。有一套自己的阅读理解和写作教学方法。',
+    description: '湖南省高考语文135分,作文接近满分。有一套自己的阅读理解和写作教学方法。',
     videoUrl: '',
     tags: ['高考语文135', '作文方法', '阅读技巧'],
     district: '岳麓区', lat: 28.20, lng: 112.94,
