@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import { allTeachers as staticTeachers, type Teacher } from '../data/teachers'
 import { useTeacher } from '../TeacherContext'
 import VideoModal from '../components/VideoModal'
+import TeacherDetailModal from '../components/TeacherDetailModal'
 
 function createTeacherIcon(num: number, isHighlight: boolean) {
   const bg = isHighlight ? '#111' : '#555'
@@ -33,20 +34,21 @@ export default function Teachers() {
   const [sortBy, setSortBy] = useState('rating')
   const [highlightId, setHighlightId] = useState<number | string | null>(null)
   const [videoTeacher, setVideoTeacher] = useState<Teacher | null>(null)
-  const [dbTeachers, setDbTeachers] = useState<Teacher[]>([])
+  const [detailTeacher, setDetailTeacher] = useState<Teacher | null>(null)
+  const [dbTeachers, setDbTeachers] = useState<Teacher[]>(staticTeachers as Teacher[])
+  const [mapReady, setMapReady] = useState(false)
 
   const mapRef = useRef<L.Map | null>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const markersRef = useRef<Map<number | string, L.Marker>>(new Map())
+  const cardRefs = useRef<Map<number | string, HTMLDivElement>>(new Map())
 
   useEffect(() => {
     loadTeachers().then((data) => {
       if (data.length > 0) {
-        setDbTeachers(data)
-      } else {
-        setDbTeachers(staticTeachers as Teacher[])
+        setDbTeachers(data as unknown as Teacher[])
       }
-    })
+    }).catch(() => {})
   }, [])
 
   const allTeachers = useMemo(() => dbTeachers, [dbTeachers])
@@ -91,16 +93,18 @@ export default function Teachers() {
     }).addTo(map)
 
     mapRef.current = map
+    map.whenReady(() => setMapReady(true))
 
     return () => {
       map.remove()
       mapRef.current = null
+      setMapReady(false)
     }
   }, [])
 
   useEffect(() => {
     const map = mapRef.current
-    if (!map) return
+    if (!map || !mapReady) return
 
     const existingIds = new Set(markersRef.current.keys())
     const currentIds = new Set(filtered.map((t) => t.id))
@@ -126,7 +130,7 @@ export default function Teachers() {
       marker.on('click', () => setHighlightId(teacher.id))
       markersRef.current.set(teacher.id, marker)
     })
-  }, [filtered])
+  }, [filtered, mapReady])
 
   useEffect(() => {
     markersRef.current.forEach((marker, id) => {
@@ -135,6 +139,12 @@ export default function Teachers() {
       const index = filtered.findIndex((t) => t.id === id)
       marker.setIcon(createTeacherIcon(index + 1, highlightId === teacher.id))
     })
+    if (highlightId) {
+      const card = cardRefs.current.get(highlightId)
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
   }, [highlightId, filtered])
 
   return (
@@ -178,6 +188,7 @@ export default function Teachers() {
               {filtered.map((teacher) => (
                 <div
                   key={teacher.id}
+                  ref={(el) => { if (el) cardRefs.current.set(teacher.id, el); else cardRefs.current.delete(teacher.id) }}
                   className="card"
                   onClick={() => { setHighlightId(teacher.id); flyToTeacher(teacher) }}
                   style={{
@@ -227,6 +238,18 @@ export default function Teachers() {
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>{teacher.students}位学员</div>
                     </div>
                   </div>
+                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)', display: 'flex', gap: 8 }}>
+                    {teacher.videoUrl && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setVideoTeacher(teacher) }}
+                        style={{ padding: '5px 12px', borderRadius: 4, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)', fontSize: '0.8rem', cursor: 'pointer' }}
+                      >自我介绍</button>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setHighlightId(teacher.id); flyToTeacher(teacher); setDetailTeacher(teacher) }}
+                      style={{ padding: '5px 12px', borderRadius: 4, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)', fontSize: '0.8rem', cursor: 'pointer' }}
+                    >了解更多</button>
+                  </div>
                 </div>
               ))}
               {filtered.length === 0 && (
@@ -259,6 +282,9 @@ export default function Teachers() {
 
       {videoTeacher && (
         <VideoModal teacherName={videoTeacher.name} videoUrl={videoTeacher.videoUrl} onClose={() => setVideoTeacher(null)} />
+      )}
+      {detailTeacher && (
+        <TeacherDetailModal teacher={detailTeacher} onClose={() => setDetailTeacher(null)} />
       )}
     </div>
   )

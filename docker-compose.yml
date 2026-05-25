@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: jiajiao-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jiajiao
+      POSTGRES_USER: jiajiao
+      POSTGRES_PASSWORD: jiajiao123
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:

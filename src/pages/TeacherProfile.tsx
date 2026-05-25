@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTeacher } from '../TeacherContext'
-import { supabase } from '../lib/supabase'
+import { api } from '../lib/api'
 
 interface ProfileData {
   name: string
@@ -17,8 +17,6 @@ interface ProfileData {
   video_url: string
   tags: string[]
   district: string
-  lat: number
-  lng: number
   rating: number
   student_count: number
   experience: string
@@ -37,17 +35,13 @@ export default function TeacherProfile() {
       return
     }
 
-    supabase.from('teachers').select('*').eq('name', teacher.name).single()
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setProfile(data)
-        }
-        setFetching(false)
-      })
+    api.getProfile()
+      .then((data) => { setProfile(data); setFetching(false) })
+      .catch(() => { setFetching(false) })
   }, [teacher, loading])
 
-  const handleLogout = async () => {
-    await logout()
+  const handleLogout = () => {
+    logout()
     navigate('/')
   }
 
@@ -77,12 +71,10 @@ export default function TeacherProfile() {
           <div>
             <h1 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>我的资料</h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 4 }}>
-              您的信息已公开展示在老师库中，家长可以看到
+              您的信息已公开展示在老师库中
             </p>
           </div>
-          <button className="btn" onClick={handleLogout} style={{ fontSize: '0.85rem' }}>
-            退出登录
-          </button>
+          <button className="btn" onClick={handleLogout} style={{ fontSize: '0.85rem' }}>退出登录</button>
         </div>
 
         <div className="card" style={{ padding: 32, marginBottom: 20 }}>
@@ -120,7 +112,6 @@ export default function TeacherProfile() {
             </div>
             <div><span style={{ color: 'var(--text-muted)' }}>课时费：</span>¥{profile.price}/小时</div>
             <div><span style={{ color: 'var(--text-muted)' }}>个人介绍：</span>{profile.description}</div>
-            {profile.video_url && <div><span style={{ color: 'var(--text-muted)' }}>自我介绍视频：</span>{profile.video_url}</div>}
             {profile.tags && profile.tags.length > 0 && (
               <div>
                 <span style={{ color: 'var(--text-muted)' }}>标签：</span>

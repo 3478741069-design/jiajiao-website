@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import { supabase, dbToTeacher } from './lib/supabase'
+import { api, clearToken, getToken, type ApiTeacher } from './lib/api'
 
 interface TeacherSession {
   name: string
@@ -9,29 +9,9 @@ interface TeacherContextType {
   teacher: TeacherSession | null
   loading: boolean
   login: (phone: string, password: string) => Promise<{ success: boolean; error?: string }>
-  register: (data: TeacherInput) => Promise<{ success: boolean; error?: string }>
-  logout: () => Promise<void>
-  loadTeachers: () => Promise<any[]>
-}
-
-export interface TeacherInput {
-  name: string
-  gender: string
-  age: number
-  year: string
-  subjects: string[]
-  grades: string[]
-  price: number
-  university: string
-  major: string
-  description: string
-  videoUrl: string
-  tags: string[]
-  district: string
-  lat: number
-  lng: number
-  phone: string
-  password: string
+  register: (data: any) => Promise<{ success: boolean; error?: string }>
+  logout: () => void
+  loadTeachers: () => Promise<ApiTeacher[]>
 }
 
 const TeacherContext = createContext<TeacherContextType | undefined>(undefined)
@@ -41,81 +21,56 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setTeacher({ name: session.user.user_metadata?.name || '' })
-      }
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setTeacher({ name: session.user.user_metadata?.name || '' })
-      } else {
-        setTeacher(null)
-      }
-    })
-
-    return () => subscription.unsubscribe()
+    const saved = localStorage.getItem('jiajiao_session')
+    if (saved) {
+      try { setTeacher(JSON.parse(saved)) } catch {}
+    }
+    if (getToken()) {
+      api.getProfile().then((p) => {
+        const session = { name: p.name }
+        setTeacher(session)
+        localStorage.setItem('jiajiao_session', JSON.stringify(session))
+      }).catch(clearToken)
+    }
+    setLoading(false)
   }, [])
 
   const login = async (phone: string, password: string) => {
-    const email = `${phone}@jiajiao.local`
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { success: false, error: error.message }
-    return { success: true }
+    try {
+      const t = await api.login(phone, password)
+      const session = { name: t.name }
+      setTeacher(session)
+      localStorage.setItem('jiajiao_session', JSON.stringify(session))
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
   }
 
-  const register = async (data: TeacherInput) => {
-    const email = `${data.phone}@jiajiao.local`
-
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password: data.password,
-      options: {
-        data: { name: data.name },
-      },
-    })
-
-    if (signUpError) return { success: false, error: signUpError.message }
-
-    const tags = Array.isArray(data.tags) ? data.tags : data.tags.split(/[,，]/).map((s) => s.trim()).filter(Boolean)
-
-    const { error: insertError } = await supabase.from('teachers').insert({
-      name: data.name,
-      initial: data.name.charAt(0),
-      gender: data.gender,
-      age: data.age,
-      year: data.year,
-      subjects: data.subjects,
-      grades: data.grades,
-      price: data.price,
-      university: data.university,
-      major: data.major,
-      description: data.description,
-      video_url: data.videoUrl,
-      tags,
-      district: data.district,
-      lat: data.lat,
-      lng: data.lng,
-    })
-
-    if (insertError) return { success: false, error: insertError.message }
-
-    return { success: true }
+  const register = async (data: any) => {
+    try {
+      const t = await api.register(data)
+      const session = { name: t.name }
+      setTeacher(session)
+      localStorage.setItem('jiajiao_session', JSON.stringify(session))
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
   }
 
-  const logout = async () => {
-    await supabase.auth.signOut()
+  const logout = () => {
+    clearToken()
+    localStorage.removeItem('jiajiao_session')
+    setTeacher(null)
   }
 
   const loadTeachers = async () => {
-    const { data, error } = await supabase.from('teachers').select('*').order('rating', { ascending: false })
-    if (error) {
-      console.error('加载老师列表失败:', error)
+    try {
+      return await api.getTeachers()
+    } catch {
       return []
     }
-    return data.map(dbToTeacher)
   }
 
   return (

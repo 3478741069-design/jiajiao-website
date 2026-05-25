@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jiajiao
+      POSTGRES_USER: jiajiao
+      POSTGRES_PASSWORD: jiajiao123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jiajiao"]
+      interval: 5s
+      retries: 5
+
+  backend:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: jiajiao
+      DB_USER: jiajiao
+      DB_PASS: jiajiao123
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
