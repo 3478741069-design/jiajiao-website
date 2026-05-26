@@ -186,7 +186,7 @@ export default function Teachers() {
 
       <section style={{ background: 'var(--bg-subtle)', padding: '32px 0 80px' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, alignItems: 'start' }} className="teachers-layout">
             <div style={{ display: 'grid', gap: 12 }}>
               {filtered.map((teacher) => (
                 <div
@@ -201,7 +201,7 @@ export default function Teachers() {
                     borderWidth: highlightId === teacher.id ? '2px' : '1px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                  <div className="teacher-card-inner" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: '50%',
                       background: 'var(--bg-subtle)', border: '1px solid var(--border)',
@@ -231,7 +231,7 @@ export default function Teachers() {
                         ))}
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div className="teacher-card-price" style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--text)' }}>¥{teacher.price}</div>
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>/小时</div>
                       <div style={{ marginTop: 6 }}>

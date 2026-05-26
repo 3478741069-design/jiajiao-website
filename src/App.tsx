@@ -7,6 +7,7 @@ import TeacherLogin from './pages/TeacherLogin'
 import TeacherRegister from './pages/TeacherRegister'
 import TeacherProfile from './pages/TeacherProfile'
 import AdminNeeds from './pages/AdminNeeds'
+import TeacherDashboard from './pages/TeacherDashboard'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="teacher/login" element={<TeacherLogin />} />
           <Route path="teacher/register" element={<TeacherRegister />} />
           <Route path="teacher/profile" element={<TeacherProfile />} />
+          <Route path="teacher/dashboard" element={<TeacherDashboard />} />
           <Route path="admin/needs" element={<AdminNeeds />} />
         </Route>
       </Routes>

@@ -38,7 +38,7 @@ export default function Home() {
           <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: 48 }}>
             长沙本地高校在校大学生，同龄人辅导，价格亲民，免费试听
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 12, alignItems: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 12, alignItems: 'end' }} className="hero-search">
             <div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 6 }}>学科</div>
               <select className="form-select" value={searchSubject} onChange={(e) => setSearchSubject(e.target.value)}>
@@ -65,7 +65,7 @@ export default function Home() {
       </section>
 
       <section style={{ padding: '56px 0', borderBottom: '1px solid var(--border)' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32, textAlign: 'center' }}>
+        <div className="container stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32, textAlign: 'center' }}>
           {stats.map((s) => (
             <div key={s.label}>
               <div style={{ fontSize: '1.6rem', fontWeight: 600, color: 'var(--text)' }}>{s.num}</div>
@@ -100,7 +100,7 @@ export default function Home() {
         <div className="container" style={{ maxWidth: 800 }}>
           <h2 className="section-title">三步找到好老师</h2>
           <p className="section-subtitle">简单高效</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 40 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 40 }} className="steps-grid">
             {[
               { step: '1', title: '发布需求', desc: '填写学生年级、学科、预算、所在区域' },
               { step: '2', title: '匹配老师', desc: '推荐合适的大学生老师，家长自主选择' },
@@ -128,7 +128,7 @@ export default function Home() {
         <div className="container">
           <h2 className="section-title">家长和学生的真实反馈</h2>
           <p className="section-subtitle"></p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 32 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 32 }} className="testimonial-grid">
             {testimonials.map((t) => (
               <div key={t.name} style={{ padding: 32 }}>
                 <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{t.name}</div>

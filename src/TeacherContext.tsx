@@ -39,7 +39,7 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
           const session = { name: p.name, role: 'teacher' as const }
           setTeacher(session)
           localStorage.setItem('jiajiao_session', JSON.stringify(session))
-        }).catch(clearToken)
+        }).catch(() => { clearToken(); setTeacher(null) })
       }
     }
     setLoading(false)

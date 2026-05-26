@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useTeacher } from '../TeacherContext'
 
@@ -10,14 +11,30 @@ const navLinks = [
 export default function Layout() {
   const location = useLocation()
   const { teacher } = useTeacher()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const closeMenu = () => setMenuOpen(false)
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       <header style={{ borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, background: 'var(--bg)' }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
-          <Link to="/" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)' }}>
+          <Link to="/" style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text)' }} onClick={closeMenu}>
             优学家教
           </Link>
+
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{
+              display: 'none',
+              width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
+              border: 'none', background: 'none', color: 'var(--text)', fontSize: '1.3rem',
+            }}
+          >
+            {menuOpen ? '✕' : '☰'}
+          </button>
+
           <nav style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path
@@ -25,6 +42,7 @@ export default function Layout() {
                 <Link
                   key={link.path}
                   to={link.path}
+                  className="nav-link"
                   style={{
                     fontSize: '0.9rem',
                     color: isActive ? 'var(--text)' : 'var(--text-muted)',
@@ -37,14 +55,15 @@ export default function Layout() {
             })}
             {teacher ? (
               <Link
-                to={teacher.role === 'admin' ? '/admin/needs' : '/teacher/profile'}
+                to={teacher.role === 'admin' ? '/admin/needs' : '/teacher/dashboard'}
+                className="nav-link"
                 style={{ fontSize: '0.85rem', color: 'var(--text)' }}
               >
                 {teacher.role === 'admin' ? '管理后台' : teacher.name}
               </Link>
             ) : (
-              <Link to="/teacher/login" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                我是老师
+              <Link to="/teacher/login" className="nav-link" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                登录
               </Link>
             )}
           </nav>
@@ -54,6 +73,58 @@ export default function Layout() {
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>
+
+      {menuOpen && (
+        <div className="mobile-menu-dropdown" style={{
+          position: 'fixed', top: 56, left: 0, right: 0, bottom: 0,
+          background: 'var(--bg)', zIndex: 99, padding: '16px 24px',
+          display: 'flex', flexDirection: 'column', gap: 4,
+        }}>
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.path
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={closeMenu}
+                style={{
+                  padding: '14px 0', fontSize: '1.05rem',
+                  color: isActive ? 'var(--text)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 600 : 400,
+                  borderBottom: '1px solid var(--border)',
+                }}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
+          {teacher ? (
+            <Link
+              to={teacher.role === 'admin' ? '/admin/needs' : '/teacher/dashboard'}
+              onClick={closeMenu}
+              style={{
+                padding: '14px 0', fontSize: '1.05rem',
+                color: 'var(--text)', fontWeight: 600,
+                borderBottom: '1px solid var(--border)',
+              }}
+            >
+              {teacher.role === 'admin' ? '管理后台' : teacher.name}
+            </Link>
+          ) : (
+            <Link
+              to="/teacher/login"
+              onClick={closeMenu}
+              style={{
+                padding: '14px 0', fontSize: '1.05rem',
+                color: 'var(--text-secondary)', fontWeight: 400,
+                borderBottom: '1px solid var(--border)',
+              }}
+            >
+              登录
+            </Link>
+          )}
+        </div>
+      )}
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '48px 0 32px', marginTop: 80 }}>
         <div className="container">
@@ -72,7 +143,6 @@ export default function Layout() {
                     {link.label}
                   </Link>
                 ))}
-                <Link to="/admin/needs" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>管理后台</Link>
               </div>
             </div>
             <div>
@@ -89,6 +159,17 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .mobile-menu-btn {
+            display: flex !important;
+          }
+          .nav-link {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

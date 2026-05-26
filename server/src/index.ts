@@ -308,3 +308,54 @@ app.post('/api/admin/teachers/:id/status', adminAuthMiddleware, async (req, res)
     res.status(500).json({ error: '操作失败' })
   }
 })
+
+app.get('/api/teacher/needs', authMiddleware, async (req, res) => {
+  try {
+    const { phone } = (req as any).user
+    const teacherResult = await pool.query('SELECT subjects, grades, district FROM teachers WHERE phone = $1', [phone])
+    if (teacherResult.rows.length === 0) {
+      res.status(404).json({ error: '未找到老师信息' })
+      return
+    }
+    const teacher = teacherResult.rows[0]
+
+    const allNeeds = await pool.query("SELECT * FROM needs ORDER BY created_at DESC")
+
+    const needs = allNeeds.rows.map((n) => {
+      const needSubjects: string[] = n.subjects || []
+      const needGrade = n.student_grade || ''
+      const needDistrict = n.district || ''
+
+      const subjectMatch = teacher.subjects.some((s: string) => needSubjects.includes(s))
+      const gradeMatch = teacher.grades.some((g: string) => needGrade.includes(g) || g === needGrade)
+      const districtMatch = teacher.district === needDistrict
+
+      let matchLevel = 0
+      if (subjectMatch && gradeMatch && districtMatch) matchLevel = 3
+      else if ((subjectMatch || gradeMatch) && districtMatch) matchLevel = 2
+      else if (subjectMatch || gradeMatch) matchLevel = 1
+
+      return {
+        id: n.id,
+        student_grade: n.student_grade,
+        subjects: needSubjects,
+        frequency: n.frequency,
+        budget: n.budget,
+        district: n.district,
+        address: n.address,
+        student_name: n.student_name,
+        notes: n.notes,
+        match_level: matchLevel,
+        created_at: n.created_at,
+      }
+    })
+
+    const filtered = needs.filter((n: any) => n.match_level > 0)
+    filtered.sort((a: any, b: any) => b.match_level - a.match_level)
+
+    res.json(filtered)
+  } catch (err) {
+    console.error('加载匹配需求失败:', err)
+    res.status(500).json({ error: '加载失败' })
+  }
+})

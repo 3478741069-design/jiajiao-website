@@ -90,4 +90,8 @@ export const api = {
   async adminUpdateTeacherStatus(id: number | string, status: string) {
     return await request(`/admin/teachers/${id}/status`, { method: 'POST', body: JSON.stringify({ status }) })
   },
+
+  async getTeacherNeeds() {
+    return await request('/teacher/needs') as any[]
+  },
 }

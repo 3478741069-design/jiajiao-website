@@ -166,14 +166,128 @@ select.form-select {
   padding-right: 36px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .section {
+    padding: 48px 0;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .section-subtitle {
+    margin-bottom: 32px;
+    font-size: 0.88rem;
+  }
+
+  .btn {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+  }
+
+  .btn-lg {
+    padding: 10px 24px;
+    font-size: 0.9rem;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
-  .container {
-    padding: 0 20px;
+
+  .hero-section {
+    padding: 64px 0 48px !important;
   }
-  .section {
-    padding: 60px 0;
+
+  .hero-section h1 {
+    font-size: 1.5rem !important;
   }
+
+  .teachers-header {
+    padding: 32px 0 24px !important;
+  }
+
+  .footer {
+    margin-top: 40px !important;
+    padding: 32px 0 24px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .mobile-full {
+    width: 100% !important;
+  }
+
+  .teachers-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .teachers-layout > div:last-child {
+    display: none;
+  }
+
+  .hero-search {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .hero-search .btn {
+    grid-column: 1 / -1;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  .steps-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  .testimonial-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .teacher-card-inner {
+    flex-wrap: wrap;
+  }
+
+  .teacher-card-price {
+     width: 100%;
+     text-align: left !important;
+     display: flex;
+     align-items: center;
+     gap: 16px;
+     margin-top: 8px;
+     padding-top: 8px;
+     border-top: 1px solid var(--border);
+   }
+
+   .detail-modal-content {
+     margin: 0 !important;
+     border-radius: 0 !important;
+     max-height: 100vh !important;
+     overflow-y: auto !important;
+   }
+
+   .btn-group {
+     flex-direction: column;
+     width: 100%;
+   }
+
+   .btn-group .btn {
+     width: 100%;
+   }
+
+   h1 {
+     font-size: 1.25rem !important;
+   }
 }

@@ -14,7 +14,7 @@ export default function TeacherLogin() {
     if (teacher.role === 'admin') {
       navigate('/admin/needs', { replace: true })
     } else {
-      navigate('/teacher/profile', { replace: true })
+      navigate('/teacher/dashboard', { replace: true })
     }
     return null
   }
@@ -34,7 +34,7 @@ export default function TeacherLogin() {
     const result = await login(phone, password)
     setSubmitting(false)
     if (result.success) {
-      navigate('/teacher/profile', { replace: true })
+      navigate('/teacher/dashboard', { replace: true })
     } else {
       setError('手机号或密码错误，请重试')
     }

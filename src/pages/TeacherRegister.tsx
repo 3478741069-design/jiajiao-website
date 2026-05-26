@@ -23,10 +23,40 @@ export default function TeacherRegister() {
   const [error, setError] = useState('')
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
+  const [locating, setLocating] = useState(false)
 
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
+  const iconRef = useRef(L.divIcon({
+    className: '',
+    html: '<div style="width:20px;height:20px;border-radius:50%;background:#111;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  }))
+
+  const autoLocate = () => {
+    if (!navigator.geolocation) {
+      setError('您的浏览器不支持定位功能')
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = parseFloat(pos.coords.latitude.toFixed(6))
+        const lng = parseFloat(pos.coords.longitude.toFixed(6))
+        setForm((prev) => ({ ...prev, lat, lng }))
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.flyTo([lat, lng], 14)
+          if (markerRef.current) markerRef.current.remove()
+          markerRef.current = L.marker([lat, lng], { icon: iconRef.current }).addTo(mapInstanceRef.current)
+        }
+        setLocating(false)
+      },
+      () => { setError('获取定位失败，请允许浏览器访问位置信息'); setLocating(false) },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
+  }
 
   const toggleArray = (field: 'subjects' | 'grades', value: string) => {
     setForm((prev) => ({
@@ -38,7 +68,7 @@ export default function TeacherRegister() {
   }
 
   useEffect(() => {
-    if (!mapRef.current || step !== 2) return
+    if (!mapRef.current || step !== 3) return
 
     const map = L.map(mapRef.current, {
       center: [form.lat, form.lng],
@@ -55,20 +85,16 @@ export default function TeacherRegister() {
 
     mapInstanceRef.current = map
 
-    const icon = L.divIcon({
-      className: '',
-      html: '<div style="width:20px;height:20px;border-radius:50%;background:#111;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>',
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-    })
-    markerRef.current = L.marker([form.lat, form.lng], { icon }).addTo(map)
+    markerRef.current = L.marker([form.lat, form.lng], { icon: iconRef.current }).addTo(map)
 
     map.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng
       setForm((prev) => ({ ...prev, lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) }))
       if (markerRef.current) markerRef.current.remove()
-      markerRef.current = L.marker([lat, lng], { icon }).addTo(map)
+      markerRef.current = L.marker([lat, lng], { icon: iconRef.current }).addTo(map)
     })
+
+    setTimeout(() => map.invalidateSize(), 100)
 
     return () => { map.remove(); mapInstanceRef.current = null }
   }, [step])
@@ -93,7 +119,7 @@ export default function TeacherRegister() {
     setSubmitting(false)
 
     if (result.success) {
-      navigate('/teacher/profile', { replace: true })
+      navigate('/teacher/dashboard', { replace: true })
     } else {
       setError(result.error || '注册失败，请稍后重试')
     }
@@ -240,10 +266,14 @@ export default function TeacherRegister() {
                   </select>
                 </div>
                 <div className="form-group full-width">
-                  <label className="form-label">在地图上点击选择您的上课位置</label>
+                  <label className="form-label">上课位置
+                    <button type="button" onClick={autoLocate} disabled={locating} style={{ marginLeft: 10, padding: '4px 12px', borderRadius: 4, fontSize: '0.8rem', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                      {locating ? '定位中...' : '📍 自动定位'}
+                    </button>
+                  </label>
                   <div ref={mapRef} style={{ width: '100%', height: 300, borderRadius: 'var(--radius)', border: '1px solid var(--border)' }} />
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 6 }}>
-                    已选坐标：{form.lat}, {form.lng}（点击地图即可更改）
+                    已选坐标：{form.lat}, {form.lng}（点击地图或使用自动定位更改）
                   </div>
                 </div>
               </div>

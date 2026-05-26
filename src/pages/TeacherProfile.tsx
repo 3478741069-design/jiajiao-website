@@ -126,8 +126,7 @@ export default function TeacherProfile() {
         </div>
 
         <div style={{ display: 'flex', gap: 12 }}>
-          <Link to="/" className="btn" style={{ flex: 1 }}>返回首页</Link>
-          <Link to="/teachers" className="btn btn-primary" style={{ flex: 1 }}>查看老师库</Link>
+          <Link to="/teacher/dashboard" className="btn" style={{ flex: 1 }}>返回工作台</Link>
         </div>
       </div>
     </div>
