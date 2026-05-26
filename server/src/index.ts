@@ -149,7 +149,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/teachers', async (_req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM teachers ORDER BY rating DESC')
+    const result = await pool.query("SELECT * FROM teachers WHERE COALESCE(status, 'active') = 'active' ORDER BY rating DESC")
     const teachers = result.rows.map((t) => ({
       id: t.id,
       name: t.name,
