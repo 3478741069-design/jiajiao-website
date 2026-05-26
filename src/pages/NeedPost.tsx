@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { api } from '../lib/api'
 
 const subjectOptions = ['数学', '英语', '语文', '物理', '化学', '生物', '历史', '地理', '编程', '钢琴', '美术', '其他']
 const gradeOptions = ['学前', '小学', '初一', '初二', '初三', '高一', '高二', '高三', '大学', '成人']
@@ -19,6 +20,8 @@ export default function NeedPost() {
     studentName: '', parentName: '', phone: '', notes: '',
   })
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const toggleSubject = (s: string) => {
     setForm((prev) => ({
@@ -27,10 +30,32 @@ export default function NeedPost() {
     }))
   }
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setError('')
+    setSubmitting(true)
+
+    try {
+      await api.submitNeed({
+        studentGrade: form.studentGrade,
+        subjects: form.subjects,
+        frequency: form.frequency,
+        budget: form.budget,
+        teacherGender: form.teacherGender,
+        district: form.district,
+        address: form.address,
+        studentName: form.studentName,
+        parentName: form.parentName,
+        phone: form.phone,
+        notes: form.notes,
+      })
+      setSubmitting(false)
+      setSubmitted(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err: any) {
+      setSubmitting(false)
+      setError(err.message || '提交失败，请检查网络后重试')
+    }
   }
 
   if (submitted) {
@@ -75,6 +100,11 @@ export default function NeedPost() {
 
       <div className="container" style={{ marginTop: 40, maxWidth: 680 }}>
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div style={{ padding: '10px 14px', borderRadius: 'var(--radius)', background: '#fef2f2', color: '#e53935', fontSize: '0.85rem', marginBottom: 20 }}>
+              {error}
+            </div>
+          )}
           <div className="card" style={{ padding: 36, marginBottom: 20 }}>
             <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 24, color: 'var(--text)' }}>学习需求</div>
             <div className="form-grid">
@@ -149,7 +179,9 @@ export default function NeedPost() {
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <button type="submit" className="btn btn-primary btn-lg" style={{ minWidth: 180 }}>提交需求</button>
+            <button type="submit" className="btn btn-primary btn-lg" style={{ minWidth: 180 }} disabled={submitting}>
+              {submitting ? '提交中...' : '提交需求'}
+            </button>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 12 }}>提交后客服将在30分钟内与您联系</p>
           </div>
         </form>

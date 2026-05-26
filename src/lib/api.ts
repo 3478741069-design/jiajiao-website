@@ -68,4 +68,26 @@ export const api = {
   async getProfile() {
     return await request('/teacher/profile')
   },
+
+  async submitNeed(data: any) {
+    return await request('/needs', { method: 'POST', body: JSON.stringify(data) })
+  },
+
+  async adminLogin(username: string, password: string) {
+    const data = await request('/admin/login', { method: 'POST', body: JSON.stringify({ username, password }) })
+    setToken(data.token)
+    return data
+  },
+
+  async adminGetTeachers() {
+    return await request('/admin/teachers') as any[]
+  },
+
+  async adminGetNeeds() {
+    return await request('/needs') as any[]
+  },
+
+  async adminUpdateTeacherStatus(id: number | string, status: string) {
+    return await request(`/admin/teachers/${id}/status`, { method: 'POST', body: JSON.stringify({ status }) })
+  },
 }

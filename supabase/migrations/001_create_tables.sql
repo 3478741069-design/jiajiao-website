@@ -22,6 +22,7 @@ CREATE TABLE teachers (
   rating DOUBLE PRECISION NOT NULL DEFAULT 5.0,
   student_count INTEGER NOT NULL DEFAULT 0,
   experience TEXT NOT NULL DEFAULT '新入驻',
+  status TEXT NOT NULL DEFAULT 'active',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

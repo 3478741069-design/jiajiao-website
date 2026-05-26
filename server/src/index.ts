@@ -24,6 +24,26 @@ function signToken(payload: { id: number; phone: string; name: string }) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
 }
 
+function adminAuthMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const header = req.headers.authorization
+  if (!header || !header.startsWith('Bearer ')) {
+    res.status(401).json({ error: '未登录' })
+    return
+  }
+  try {
+    const token = header.slice(7)
+    const decoded = jwt.verify(token, JWT_SECRET) as any
+    if (!decoded.isAdmin) {
+      res.status(403).json({ error: '非管理员' })
+      return
+    }
+    ;(req as any).admin = decoded
+    next()
+  } catch {
+    res.status(401).json({ error: '登录已过期' })
+  }
+}
+
 function authMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
   const header = req.headers.authorization
   if (!header || !header.startsWith('Bearer ')) {
@@ -195,4 +215,96 @@ app.get('/api/teacher/profile', authMiddleware, async (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`API 服务已启动: http://localhost:${PORT}`)
+})
+
+app.post('/api/needs', async (req, res) => {
+  try {
+    const { studentGrade, subjects, frequency, budget, teacherGender, district, address, studentName, parentName, phone, notes } = req.body
+
+    if (!studentGrade || !frequency || !budget || !district || !parentName || !phone) {
+      res.status(400).json({ error: '请填写所有必填项' })
+      return
+    }
+
+    await pool.query(
+      `INSERT INTO needs (student_grade, subjects, frequency, budget, teacher_gender, district, address, student_name, parent_name, phone, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [studentGrade, subjects || [], frequency, budget, teacherGender || '不限', district, address || '', studentName || '', parentName, phone, notes || '']
+    )
+
+    res.json({ success: true })
+  } catch (err: any) {
+    console.error('提交需求失败:', err)
+    res.status(500).json({ error: '提交失败' })
+  }
+})
+
+app.get('/api/needs', adminAuthMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM needs ORDER BY created_at DESC')
+    res.json(result.rows)
+  } catch (err: any) {
+    res.status(500).json({ error: '查询失败' })
+  }
+})
+
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body
+    if (username === 'admin' && password === 'jiajiao2024') {
+      const token = jwt.sign({ id: 0, phone: 'admin', name: '管理员', isAdmin: true }, JWT_SECRET, { expiresIn: '12h' })
+      res.json({ success: true, token, name: '管理员' })
+      return
+    }
+    res.status(401).json({ error: '账号或密码错误' })
+  } catch (err) {
+    res.status(500).json({ error: '登录失败' })
+  }
+})
+
+app.get('/api/admin/teachers', adminAuthMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM teachers ORDER BY created_at DESC')
+    const teachers = result.rows.map((t) => ({
+      id: t.id,
+      name: t.name,
+      initial: t.initial,
+      gender: t.gender,
+      age: t.age,
+      year: t.year,
+      subjects: t.subjects,
+      grades: t.grades,
+      price: t.price,
+      university: t.university,
+      major: t.major,
+      description: t.description,
+      video_url: t.video_url,
+      tags: t.tags,
+      district: t.district,
+      phone: t.phone,
+      rating: parseFloat(t.rating),
+      student_count: t.student_count,
+      experience: t.experience,
+      status: t.status || 'active',
+      created_at: t.created_at,
+    }))
+    res.json(teachers)
+  } catch (err) {
+    res.status(500).json({ error: '查询失败' })
+  }
+})
+
+app.post('/api/admin/teachers/:id/status', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    if (!['active', 'pending', 'rejected'].includes(status)) {
+      res.status(400).json({ error: '无效状态' })
+      return
+    }
+    await pool.query('UPDATE teachers SET status = $1 WHERE id = $2', [status, id])
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: '操作失败' })
+  }
 })

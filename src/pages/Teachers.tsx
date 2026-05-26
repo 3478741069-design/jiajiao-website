@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { allTeachers as staticTeachers, type Teacher } from '../data/teachers'
@@ -27,6 +27,7 @@ function createTeacherIcon(num: number, isHighlight: boolean) {
 
 export default function Teachers() {
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const { loadTeachers } = useTeacher()
   const [subject, setSubject] = useState(searchParams.get('subject') || '')
   const [grade, setGrade] = useState(searchParams.get('grade') || '')
@@ -46,10 +47,12 @@ export default function Teachers() {
   useEffect(() => {
     loadTeachers().then((data) => {
       if (data.length > 0) {
-        setDbTeachers(data as unknown as Teacher[])
+        setDbTeachers(data)
       }
-    }).catch(() => {})
-  }, [])
+    }).catch(() => {
+      console.log('API 未连接，显示静态数据')
+    })
+  }, [location.pathname])
 
   const allTeachers = useMemo(() => dbTeachers, [dbTeachers])
 

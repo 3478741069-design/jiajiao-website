@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS teachers (
   rating DOUBLE PRECISION NOT NULL DEFAULT 5.0,
   student_count INTEGER NOT NULL DEFAULT 0,
   experience TEXT NOT NULL DEFAULT '新入驻',
+  status TEXT NOT NULL DEFAULT 'active',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -33,3 +34,19 @@ INSERT INTO teachers (phone, password_hash, name, initial, gender, age, year, su
 ('13800006666', '$2b$10$placeholder_hash_6', '赵雅文', '赵', '女', 22, '大四', ARRAY['钢琴','音乐'], ARRAY['小学','初中'], 100, '湖南师范大学', '音乐教育', '钢琴十级，亲和力强，擅长考级辅导。', ARRAY['钢琴十级','亲和力强'], '芙蓉区', 28.19, 113.03, 5.0, 28, '3年家教经验'),
 ('13800007777', '$2b$10$placeholder_hash_7', '孙浩宇', '孙', '男', 20, '大二', ARRAY['物理','数学'], ARRAY['初中','高中'], 75, '长沙理工大学', '物理学', '物理竞赛获奖，善于用实例解释抽象概念。', ARRAY['竞赛获奖','实例教学'], '雨花区', 28.14, 113.03, 4.7, 14, '1年家教经验'),
 ('13800008888', '$2b$10$placeholder_hash_8', '周晓萌', '周', '女', 21, '大三', ARRAY['美术','书法'], ARRAY['小学','初中'], 75, '湖南师范大学', '美术教育', '擅长少儿美术启蒙，鼓励孩子表达自己。', ARRAY['创意启蒙','鼓励表达'], '岳麓区', 28.215, 112.925, 4.8, 20, '2年家教经验');
+
+CREATE TABLE IF NOT EXISTS needs (
+  id SERIAL PRIMARY KEY,
+  student_grade TEXT NOT NULL,
+  subjects TEXT[] NOT NULL DEFAULT '{}',
+  frequency TEXT NOT NULL DEFAULT '',
+  budget TEXT NOT NULL DEFAULT '',
+  teacher_gender TEXT NOT NULL DEFAULT '不限',
+  district TEXT NOT NULL,
+  address TEXT NOT NULL DEFAULT '',
+  student_name TEXT NOT NULL DEFAULT '',
+  parent_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  notes TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

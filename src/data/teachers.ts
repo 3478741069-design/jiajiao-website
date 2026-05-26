@@ -19,7 +19,7 @@ export interface Teacher {
   district: string
   lat: number
   lng: number
-  detail: {
+  detail?: {
     teachingStyle: string
     achievements: string[]
     availableTime: string

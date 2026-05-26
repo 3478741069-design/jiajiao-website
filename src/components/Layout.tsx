@@ -36,8 +36,11 @@ export default function Layout() {
               )
             })}
             {teacher ? (
-              <Link to="/teacher/profile" style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
-                {teacher.name}
+              <Link
+                to={teacher.role === 'admin' ? '/admin/needs' : '/teacher/profile'}
+                style={{ fontSize: '0.85rem', color: 'var(--text)' }}
+              >
+                {teacher.role === 'admin' ? '管理后台' : teacher.name}
               </Link>
             ) : (
               <Link to="/teacher/login" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -69,6 +72,7 @@ export default function Layout() {
                     {link.label}
                   </Link>
                 ))}
+                <Link to="/admin/needs" style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>管理后台</Link>
               </div>
             </div>
             <div>
